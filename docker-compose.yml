@@ -22,18 +22,18 @@ services:
       - app_net
     # Brak portów -> DB nie jest wystawiony na świat
 
-  # bot:
-  #   build:
-  #     context: ./bot
-  #     dockerfile: Dockerfile
-  #   container_name: discord_bot
-  #   env_file: .env
-  #   depends_on:
-  #     db:
-  #       condition: service_healthy
-  #   restart: unless-stopped
-  #   networks:
-  #     - app_net
+  bot:
+    build:
+      context: ./bot
+      dockerfile: Dockerfile
+    container_name: discord_bot
+    env_file: .env
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - app_net
     # Bot nie potrzebuje portów (łączenie OUT do Discord API)
 
   # Opcjonalnie: pgAdmin (panel www do DB)

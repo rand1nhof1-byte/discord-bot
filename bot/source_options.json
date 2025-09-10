@@ -1,0 +1,6 @@
+{
+    "TOKEN": "xxx",
+    "GUILD_ID": 922959618253135893,
+    "bot_allowed_roles": ["Własciciel", "Moderator", "Koordynator Ligi F1"],
+    "cnn_string": "Driver={ODBC Driver 17 for SQL Server};Server=tcp:kpla-jpa-discord.database.windows.net,1433;Database=kpla-discord-jpa;Uid=rand1nho;Pwd=KcI130117;Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;"
+}
