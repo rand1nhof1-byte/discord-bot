@@ -14,11 +14,11 @@ class Database:
         :param driver: domyślny sterownik ODBC
         """
         self.connection_string = cnn_string
-        self.DB_HOST = os.environ("DB_HOST")
-        self.DB_PORT = os.environ("DB_PORT")
-        self.DB_NAME = os.environ("DB_NAME")
-        self.DB_USER = os.environ("DB_USER")
-        self.DB_PASS = os.environ("DB_PASS")
+        self.DB_HOST = os.environ["DB_HOST"]
+        self.DB_PORT = os.environ["DB_PORT"]
+        self.DB_NAME = os.environ["DB_NAME"]
+        self.DB_USER = os.environ["DB_USER"]
+        self.DB_PASS = os.environ["DB_PASS"]
         # self.connection_string = (
         #     "Driver={ODBC Driver 17 for SQL Server};"
         #     "Server=DESKTOP-VV9JD6R\\SQLEXPRESS;"   # np. "localhost\\SQLEXPRESS"
@@ -266,3 +266,4 @@ class Database:
             raise
         finally:
             conn.close()
+
