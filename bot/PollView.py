@@ -4,12 +4,12 @@ from discord.ui import View, Button
 from discord.ui.button import ButtonStyle
 from DataModel import Poll, PollOption, Vote
 from Helpers import resolve_emoji
-import pyodbc
+import psycopg2
 from datetime import timedelta
 
 
 class PollView(View):
-    def __init__(self, interaction, poll: Poll, options: list[PollOption], db_conn: pyodbc.Connection):
+    def __init__(self, interaction, poll: Poll, options: list[PollOption], db_conn):
         super().__init__(timeout=None)
         self.poll = poll
         self.options = options
@@ -108,6 +108,7 @@ class PollView(View):
             )
         message = interaction.message
         await message.edit(embed=embed, view=self)
+
 
 
 
