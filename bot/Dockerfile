@@ -16,11 +16,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 WORKDIR /app
 
 # Najpierw requirements (lepszy cache warstw)
-COPY bot/requirements.txt /app/requirements.txt
+COPY requirements.txt /app
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Potem dopiero reszta kodu
-COPY bot/ /app/
+COPY . /app
 
 # (Opcjonalnie) utwórz nie-root usera
 RUN useradd -m -u 10001 appuser && chown -R appuser:appuser /app
@@ -28,3 +28,4 @@ USER appuser
 
 # Domyślna komenda (dostosuj jeśli masz inny plik/wejście)
 CMD ["python", "bot.py"]
+
