@@ -18,7 +18,7 @@ class Database:
         self.DB_PORT = os.environ["DB_PORT"]
         self.DB_NAME = os.environ["DB_NAME"]
         self.DB_USER = os.environ["DB_USER"]
-        self.DB_PASS = os.environ["DB_PASS"]
+        self.DB_PASS = os.environ["DB_PASSWORD"]
         # self.connection_string = (
         #     "Driver={ODBC Driver 17 for SQL Server};"
         #     "Server=DESKTOP-VV9JD6R\\SQLEXPRESS;"   # np. "localhost\\SQLEXPRESS"
@@ -266,4 +266,5 @@ class Database:
             raise
         finally:
             conn.close()
+
 
