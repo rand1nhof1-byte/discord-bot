@@ -28,10 +28,9 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-
-GUILD_ID = options['GUILD_ID']
-GUILD_ID = 1279520097521762408
 BOT_TOKEN = str(os.getenv('TOKEN'))
+GUILD_ID = os.getenv('GUILD_ID')
+# GUILD_ID = 1279520097521762408
 user_tz = ZoneInfo("Europe/Warsaw")
 # cnn_string = os.get['cnn_string']
 
