@@ -1,9 +1,12 @@
 from zoneinfo import ZoneInfo
 
 import discord
+import psycopg2
 from discord import Interaction
 from discord.ui import View, Button
 from discord.ui.button import ButtonStyle
+from psycopg2.extras import NamedTupleCursor
+
 from DataModel import Poll, PollOption, Vote
 from Helpers import resolve_emoji
 from datetime import timedelta, timezone
@@ -54,13 +57,13 @@ class PollView(View):
                 ephemeral=True, delete_after=5)
                 return
 
-            cursor = self.db_conn.cursor()
+            cursor = self.db_conn.cursor(cursor_factory=NamedTupleCursor)
 
-            cursor.execute("DELETE FROM dbo.Votes WHERE poll_id = ? AND discord_user_id = ?", (self.poll.poll_id, user_id))
+            cursor.execute("DELETE FROM dbo.Votes WHERE poll_id = %s AND discord_user_id = %s", (self.poll.poll_id, user_id))
 
             new_vote = Vote(vote_id=None, poll_id=self.poll.poll_id, option_id=option.option_id, discord_user_id=user_id, user_display_name=user_name)
             cursor.execute(
-                "INSERT INTO Votes (poll_id, option_id, discord_user_id, voted_at, user_display_name) VALUES (?, ?, ?, ?, ?)",
+                "INSERT INTO dbo.Votes (poll_id, option_id, discord_user_id, voted_at, user_display_name) VALUES (%s, %s, %s, %s, %s)",
                 (new_vote.poll_id, new_vote.option_id, new_vote.discord_user_id, new_vote.voted_at, new_vote.user_display_name)
             )
             self.db_conn.commit()
@@ -75,14 +78,16 @@ class PollView(View):
 
 
     async def update_poll_message(self, interaction: discord.Interaction):
-        cursor = self.db_conn.cursor()
+        cursor = self.db_conn.cursor(cursor_factory=NamedTupleCursor)
         cursor.execute("""
                     SELECT o.option_text, o.emoji, o.option_id, string_agg(v.user_display_name, ',') votes
                     FROM PollOptions o
                     LEFT JOIN Votes v ON o.option_id = v.option_id
                     WHERE o.poll_id = ?
+                    FROM dbo.PollOptions o
+                    WHERE o.poll_id = %s
                     GROUP BY o.option_text, o.emoji, o.option_id
-                """, self.poll.poll_id)
+                """, (self.poll.poll_id,))
 
         results = cursor.fetchall()
 

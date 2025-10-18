@@ -9,6 +9,7 @@ from dotenv import load_dotenv
 from DataModel import *
 from DataModel import Template
 from datetime import timezone
+from psycopg2.extras import NamedTupleCursor
 
 PARAM_PLACEHOLDER = '%s' #%s for postgres and {PARAM_PLACEHOLDER} for pyodbc for debug
 
@@ -33,17 +34,18 @@ class Database:
 
     def connect(self):
         conn = psycopg2.connect(
-        host=self.DB_HOST,
-        port=self.DB_PORT,
-        database=self.DB_NAME,
-        user=self.DB_USER,
-        password=self.DB_PASS
-        )
+            host=self.DB_HOST,
+            port=self.DB_PORT,
+            database=self.DB_NAME,
+            user=self.DB_USER,
+            password=self.DB_PASS
+            )
+        # conn = pyodbc.connect(self.connection_string)
         return conn
 
     def get_all(self, table, cls):
         conn = self.connect()
-        cursor = conn.cursor()
+        cursor = conn.cursor(cursor_factory=NamedTupleCursor)
         try:
             cursor.execute(f"SELECT * FROM dbo.{table}")
             items = []
@@ -59,15 +61,14 @@ class Database:
 
     def get_template(self, template_id):
         conn = self.connect()
-        cursor = conn.cursor()
+        cursor = conn.cursor(cursor_factory=NamedTupleCursor)
 
         try:
             cursor.execute(f"""SELECT t.template_id, t.name, t.description, t.created_at, o.template_option_id, o.emoji, o.option_text, o.required_roles
             FROM dbo.Templates t
-            LEFT JOIN TemplateOptions o ON t.template_id = o.template_id
-            WHERE t.template_id = {PARAM_PLACEHOLDER}""", (template_id))
+            LEFT JOIN dbo.TemplateOptions o ON t.template_id = o.template_id
+            WHERE t.template_id = %s""", (template_id,))
             template = None
-
             for row in cursor.fetchall():
                 if not template:
                     template = Template(
@@ -95,7 +96,7 @@ class Database:
 
     def insert_template(self, template):
         conn = self.connect()
-        cursor = conn.cursor()
+        cursor = conn.cursor(cursor_factory=NamedTupleCursor)
 
         try:
             print(template)
@@ -114,10 +115,10 @@ class Database:
 
     def get_template_option(self, id):
         conn = self.connect()
-        cursor = conn.cursor()
+        cursor = conn.cursor(cursor_factory=NamedTupleCursor)
 
         try:
-            cursor.execute(f"SELECT * FROM dbo.TemplateOptions where template_option_id = {PARAM_PLACEHOLDER}", (id))
+            cursor.execute(f"SELECT * FROM dbo.TemplateOptions where template_option_id = {PARAM_PLACEHOLDER}", (id,))
             result = cursor.fetchone()
             return result
         except Exception as e:
@@ -127,7 +128,7 @@ class Database:
 
     def insert_template_option(self, template_option):
         conn = self.connect()
-        cursor = conn.cursor()
+        cursor = conn.cursor(cursor_factory=NamedTupleCursor)
 
         try:
             print(template_option)
@@ -144,14 +145,14 @@ class Database:
 
     def insert_poll(self, poll):
         conn = self.connect()
-        cursor = conn.cursor()
+        cursor = conn.cursor(cursor_factory=NamedTupleCursor)
 
         try:
             print(poll)
             cursor.execute(f"""
                INSERT INTO dbo.Polls (channel_id, title, description, created_at, is_active, start_time, duration_minutes)
-               OUTPUT INSERTED.poll_id
                VALUES ({PARAM_PLACEHOLDER}, {PARAM_PLACEHOLDER}, {PARAM_PLACEHOLDER}, {PARAM_PLACEHOLDER}, {PARAM_PLACEHOLDER}, {PARAM_PLACEHOLDER}, {PARAM_PLACEHOLDER})
+               RETURNING poll_id
                """,
                            (poll.channel_id, poll.title, poll.description, poll.created_at, poll.is_active, poll.start_time.astimezone(timezone.utc), poll.duration_minutes))
             new_id = cursor.fetchone()[0]
@@ -167,7 +168,7 @@ class Database:
 
     def insert_poll_options(self, options, poll_id):
         conn = self.connect()
-        cursor = conn.cursor()
+        cursor = conn.cursor(cursor_factory=NamedTupleCursor)
 
         try:
             for option in options:
@@ -189,7 +190,7 @@ class Database:
 
     def save_poll_message_id(self, poll_id, message_id):
         conn = self.connect()
-        cursor = conn.cursor()
+        cursor = conn.cursor(cursor_factory=NamedTupleCursor)
 
         try:
             cursor.execute(f"""
@@ -208,13 +209,13 @@ class Database:
 
     def get_poll_by_id(self, poll_id):
         conn = self.connect()
-        cursor = conn.cursor()
+        cursor = conn.cursor(cursor_factory=NamedTupleCursor)
 
         try:
             cursor.execute(f"""
                                    SELECT * FROM dbo.Polls where poll_id = {PARAM_PLACEHOLDER}
                                    """,
-                           poll_id)
+                           (poll_id,))
             row = cursor.fetchone()
             return Poll(poll_id=row.poll_id, channel_id=row.channel_id, title=row.title, description=row.description, message_id=row.message_id, start_time=row.start_time.replace(tzinfo=timezone.utc), duration_minutes=row.duration_minutes)
         except Exception as e:
@@ -226,13 +227,13 @@ class Database:
 
     def get_poll_options(self, poll_id):
         conn = self.connect()
-        cursor = conn.cursor()
+        cursor = conn.cursor(cursor_factory=NamedTupleCursor)
 
         try:
             cursor.execute(f"""
                                            SELECT * FROM dbo.PollOptions where poll_id = {PARAM_PLACEHOLDER}
                                            """,
-                           poll_id)
+                           (poll_id,))
             results = []
             for row in cursor.fetchall():
                 results.append(
@@ -254,9 +255,9 @@ class Database:
 
     def get_active_polls(self):
         conn = self.connect()
-        cursor = conn.cursor()
+        cursor = conn.cursor(cursor_factory=NamedTupleCursor)
         try:
-            cursor.execute(f"SELECT * FROM dbo.Polls where is_active = 1")
+            cursor.execute(f"SELECT * FROM dbo.Polls where is_active = TRUE")
             items = []
             for row in cursor.fetchall():
                 items.append(self.map_row_to_dataclass(Poll, row))

@@ -5,6 +5,9 @@ from discord.ext import commands
 from discord.ext import tasks
 from discord import app_commands
 import json
+
+from psycopg2.extras import NamedTupleCursor
+
 from Database import Database
 from DataModel import *
 from discord.ui import View, Button
@@ -28,7 +31,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-BOT_TOKEN = str(os.getenv('TOKEN'))
+BOT_TOKEN = os.getenv('TOKEN')
 GUILD_ID = os.getenv('GUILD_ID')
 # GUILD_ID = 1279520097521762408
 user_tz = ZoneInfo("Europe/Warsaw")
@@ -47,7 +50,7 @@ async def check_polls():
             if poll.ready_to_ping():
                 print("poll_ready_to_ping")
                 conn = database_client.connect()
-                cursor = conn.cursor()
+                cursor = conn.cursor(cursor_factory=NamedTupleCursor)
                 cursor.execute(f"""select discord_user_id
                                     from dbo.PollOptions p
                                     left join dbo.Votes v
@@ -69,8 +72,8 @@ async def check_polls():
 
 async def setup_hook():
     # odczytaj z bazy wszystkie aktywne ankiety
-    with database_client.connect().cursor() as cursor:
-        cursor.execute("SELECT poll_id FROM dbo.Polls WHERE is_active=1")
+    with database_client.connect().cursor(cursor_factory=NamedTupleCursor) as cursor:
+        cursor.execute("SELECT poll_id FROM dbo.Polls WHERE is_active=TRUE")
         for row in cursor.fetchall():
             poll = database_client.get_poll_by_id(row.poll_id)
 
