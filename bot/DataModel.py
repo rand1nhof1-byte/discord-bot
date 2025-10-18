@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from typing import List, Optional
 from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
 
 
 @dataclass
@@ -57,11 +58,11 @@ class Poll:
     options: Optional[List[PollOption]] = None
 
     def ready_to_ping(self):
-        return datetime.now() + timedelta(minutes=15) >= self.start_time
+        return datetime.now().replace(tzinfo=ZoneInfo("Europe/Warsaw")) + timedelta(minutes=15) >= self.start_time.replace(tzinfo=ZoneInfo("Europe/Warsaw"))
 
     def has_ended(self):
         end_time = self.start_time + timedelta(minutes=self.duration_minutes)
-        return datetime.now() >= end_time
+        return datetime.now().replace(tzinfo=ZoneInfo("Europe/Warsaw")) >= end_time.replace(tzinfo=ZoneInfo("Europe/Warsaw"))
 
     def is_currently_active(self):
         return self.is_active and not self.has_ended()
