@@ -10,6 +10,7 @@ from DataModel import *
 from DataModel import Template
 from datetime import timezone
 
+PARAM_PLACEHOLDER = '%s' #%s for postgres and {PARAM_PLACEHOLDER} for pyodbc for debug
 
 class Database:
     def __init__(self):
@@ -64,7 +65,7 @@ class Database:
             cursor.execute(f"""SELECT t.template_id, t.name, t.description, t.created_at, o.template_option_id, o.emoji, o.option_text, o.required_roles
             FROM dbo.Templates t
             LEFT JOIN TemplateOptions o ON t.template_id = o.template_id
-            WHERE t.template_id = ?""", (template_id))
+            WHERE t.template_id = {PARAM_PLACEHOLDER}""", (template_id))
             template = None
 
             for row in cursor.fetchall():
@@ -92,7 +93,6 @@ class Database:
         finally:
             conn.close()
 
-
     def insert_template(self, template):
         conn = self.connect()
         cursor = conn.cursor()
@@ -101,7 +101,7 @@ class Database:
             print(template)
             cursor.execute(f"""
             INSERT INTO dbo.Templates (name, description, created_at)
-            VALUES (?, ?, ?)
+            VALUES ({PARAM_PLACEHOLDER}, {PARAM_PLACEHOLDER}, {PARAM_PLACEHOLDER})
             """,
                            (template.name, template.description, template.created_at))
             conn.commit()
@@ -117,7 +117,7 @@ class Database:
         cursor = conn.cursor()
 
         try:
-            cursor.execute("SELECT * FROM dbo.TemplateOptions where template_option_id = ?", (id))
+            cursor.execute(f"SELECT * FROM dbo.TemplateOptions where template_option_id = {PARAM_PLACEHOLDER}", (id))
             result = cursor.fetchone()
             return result
         except Exception as e:
@@ -131,7 +131,7 @@ class Database:
 
         try:
             print(template_option)
-            cursor.execute("INSERT INTO dbo.TemplateOptions (template_id, emoji, option_text, required_roles) VALUES (?, ?, ?, ?)",
+            cursor.execute(f"INSERT INTO dbo.TemplateOptions (template_id, emoji, option_text, required_roles) VALUES ({PARAM_PLACEHOLDER}, {PARAM_PLACEHOLDER}, {PARAM_PLACEHOLDER}, {PARAM_PLACEHOLDER})",
                            (template_option.template_id, template_option.emoji, template_option.option_text, template_option.required_roles))
 
             conn.commit()
@@ -151,7 +151,7 @@ class Database:
             cursor.execute(f"""
                INSERT INTO dbo.Polls (channel_id, title, description, created_at, is_active, start_time, duration_minutes)
                OUTPUT INSERTED.poll_id
-               VALUES (?, ?, ?, ?, ?, ?, ?)
+               VALUES ({PARAM_PLACEHOLDER}, {PARAM_PLACEHOLDER}, {PARAM_PLACEHOLDER}, {PARAM_PLACEHOLDER}, {PARAM_PLACEHOLDER}, {PARAM_PLACEHOLDER}, {PARAM_PLACEHOLDER})
                """,
                            (poll.channel_id, poll.title, poll.description, poll.created_at, poll.is_active, poll.start_time.astimezone(timezone.utc), poll.duration_minutes))
             new_id = cursor.fetchone()[0]
@@ -174,7 +174,7 @@ class Database:
                 print(option)
                 cursor.execute(f"""
                                INSERT INTO dbo.PollOptions (poll_id, emoji, option_text, required_roles)
-                               VALUES (?, ?, ?, ?)
+                               VALUES ({PARAM_PLACEHOLDER}, {PARAM_PLACEHOLDER}, {PARAM_PLACEHOLDER}, {PARAM_PLACEHOLDER})
                                """,
                                (
                                poll_id, option.emoji, option.option_text, option.required_roles))
@@ -193,8 +193,8 @@ class Database:
 
         try:
             cursor.execute(f"""
-                           UPDATE dbo.Polls SET message_id = ?
-                           WHERE poll_id = ?
+                           UPDATE dbo.Polls SET message_id = {PARAM_PLACEHOLDER}
+                           WHERE poll_id = {PARAM_PLACEHOLDER}
                            """,
                            (
                            message_id, poll_id))
@@ -212,7 +212,7 @@ class Database:
 
         try:
             cursor.execute(f"""
-                                   SELECT * FROM dbo.Polls where poll_id = ?
+                                   SELECT * FROM dbo.Polls where poll_id = {PARAM_PLACEHOLDER}
                                    """,
                            poll_id)
             row = cursor.fetchone()
@@ -230,7 +230,7 @@ class Database:
 
         try:
             cursor.execute(f"""
-                                           SELECT * FROM dbo.PollOptions where poll_id = ?
+                                           SELECT * FROM dbo.PollOptions where poll_id = {PARAM_PLACEHOLDER}
                                            """,
                            poll_id)
             results = []
