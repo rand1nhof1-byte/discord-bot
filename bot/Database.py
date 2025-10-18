@@ -1,6 +1,11 @@
 # import pyodbc
 import psycopg2
 import os
+
+
+import os
+from dotenv import load_dotenv
+
 from DataModel import *
 from DataModel import Template
 
@@ -13,6 +18,7 @@ class Database:
         :param database: nazwa bazy danych
         :param driver: domyślny sterownik ODBC
         """
+        load_dotenv()
         self.connection_string = cnn_string
         self.DB_HOST = os.environ["DB_HOST"]
         self.DB_PORT = os.environ["DB_PORT"]
