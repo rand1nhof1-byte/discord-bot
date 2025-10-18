@@ -1,3 +1,5 @@
+import zoneinfo
+
 import discord
 from discord.ext import commands
 from discord.ext import tasks
@@ -8,10 +10,9 @@ from DataModel import *
 from discord.ui import View, Button
 from discord.ui.button import ButtonStyle
 from discord.interactions import Interaction
-from Helpers import resolve_emoji, requires_roles
+from Helpers import resolve_emoji, requires_roles, event_date_helper, parse_duration
 from PollView import PollView
-
-
+from zoneinfo import ZoneInfo
 
 
 source_options_file = "source_options.json"
@@ -28,7 +29,7 @@ with open(source_options_file, "r", encoding="UTF-8") as f:
 BOT_TOKEN = options['TOKEN']
 GUILD_ID = options['GUILD_ID']
 GUILD_ID = 1279520097521762408
-# CHANNEL_ID = 923324426408321044
+user_tz = ZoneInfo("Europe/Warsaw")
 cnn_string = options['cnn_string']
 
 database_client = Database(cnn_string)
@@ -208,17 +209,18 @@ async def poll(interaction: discord.Interaction):
     try:
         title = await wait_for_dm(interaction, "Podaj tytuł:")
         description = await wait_for_dm(interaction, "Podaj opis:")
-        start_time = await wait_for_dm(interaction, "Podaj date rozpoczęcia w formacie 'yyyy-mm-dd hh-MM-ss'")
-        duration = await wait_for_dm(interaction, "Podaj czas trwania eventu w minutach: ")
-
+        start_time = await wait_for_dm(interaction, "Podaj date rozpoczęcia w formacie 'dzien godzina, np poniedzialek 19:30")
+        event_start = event_date_helper(start_time)
+        duration = await wait_for_dm(interaction, "Podaj czas trwania eventu w formacie(h min: 1h30min")
+        event_duration = parse_duration(duration)
         try:
             poll = Poll(poll_id=None,
                         channel_id=interaction.channel.id,
                         title=title,
                         description=description,
                         message_id=None,
-                        start_time=datetime.strptime(start_time, "%Y-%m-%d %H:%M:%S"),
-                        duration_minutes=int(duration))
+                        start_time=event_start.replace(tzinfo=user_tz),
+                        duration_minutes=int(event_duration))
         except Exception as e:
             print(e)
             await interaction.user.send(f"Błąd tworzenia ankiety {e.args}")
@@ -240,6 +242,7 @@ async def poll(interaction: discord.Interaction):
                               color=discord.Color.blue(),
                               timestamp=datetime.now())
 
+        print(f"Created poll with start datetime: {poll.start_time}")
         embed.add_field(
             name="📅",
             value=f"<t:{int(poll.start_time.timestamp())}:F> - <t:{int((poll.start_time+timedelta(minutes=poll.duration_minutes)).timestamp())}:t>\n" 
