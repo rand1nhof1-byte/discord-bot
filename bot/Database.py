@@ -215,7 +215,7 @@ class Database:
                                    """,
                            poll_id)
             row = cursor.fetchone()
-            return Poll(poll_id=row.poll_id, channel_id=row.channel_id, title=row.title, description=row.description, message_id=row.message_id, start_time=row.start_time, duration_minutes=row.duration_minutes)
+            return Poll(poll_id=row.poll_id, channel_id=row.channel_id, title=row.title, description=row.description, message_id=row.message_id, start_time=row.start_time.replace(tzinfo=timezone.utc), duration_minutes=row.duration_minutes)
         except Exception as e:
             conn.rollback()
             print("Error inserting data:", e)
@@ -266,5 +266,6 @@ class Database:
             raise
         finally:
             conn.close()
+
 
 
