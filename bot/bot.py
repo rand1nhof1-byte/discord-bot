@@ -13,26 +13,29 @@ from discord.interactions import Interaction
 from Helpers import resolve_emoji, requires_roles, event_date_helper, parse_duration
 from PollView import PollView
 from zoneinfo import ZoneInfo
+import os
+from dotenv import load_dotenv
 
 
-source_options_file = "source_options.json"
-with open(source_options_file, "r", encoding="UTF-8") as f:
-    options = json.load(f)
-
-    print(f"JSON CONTENT: {options}")
+# source_options_file = "source_options.json"
+# with open(source_options_file, "r", encoding="UTF-8") as f:
+#     options = json.load(f)
+#
+#     print(f"JSON CONTENT: {options}")
 
     # for key, value in options.items():
     #     print(f"{key}: {value}")
 
+load_dotenv()
 
 
-BOT_TOKEN = options['TOKEN']
 GUILD_ID = options['GUILD_ID']
 GUILD_ID = 1279520097521762408
+BOT_TOKEN = str(os.getenv('TOKEN'))
 user_tz = ZoneInfo("Europe/Warsaw")
-cnn_string = options['cnn_string']
+# cnn_string = os.get['cnn_string']
 
-database_client = Database(cnn_string)
+database_client = Database()
 bot = commands.Bot(command_prefix="!", intents=discord.Intents.all())
 
 
@@ -106,7 +109,7 @@ async def on_ready():
     check_polls.start()
 
 
-@requires_roles("Właściciel", "Moderator", "Koordynator Ligi F1")
+@requires_roles("Właściciel", "Moderator")
 @bot.tree.command(name="templates")
 async def templates(interaction: discord.Interaction):
     # if not any(role.name in allowed_roles for role in interaction.user.roles):
@@ -159,7 +162,7 @@ async def templates(interaction: discord.Interaction):
 
 
 @bot.tree.command(name="template-create")
-@requires_roles("Właściciel", "Moderator", "Koordynator Ligi F1")
+@requires_roles("Właściciel", "Moderator")
 async def template_create(interaction: discord.Interaction):
     # if not any(role.name in allowed_roles for role in interaction.user.roles):
     #     await interaction.response.send_message("Nie masz uprawnień do tworzenia szablonów!", ephemeral=True, delete_after=5)
@@ -287,7 +290,8 @@ async def poll(interaction: discord.Interaction):
     #
     except TimeoutError:
         await interaction.user.send("Timeout")
-    except ValueError:
+    except ValueError as e:
+        await interaction.user.send(str(e.args))
         await interaction.user.send("Anulowano tworzenie ankiety")
 
 #

@@ -8,10 +8,11 @@ from dotenv import load_dotenv
 
 from DataModel import *
 from DataModel import Template
+from datetime import timezone
 
 
 class Database:
-    def __init__(self, cnn_string):
+    def __init__(self):
         """
         Inicjalizacja obiektu bazy danych.
         :param server: nazwa serwera SQL (np. "localhost\\SQLEXPRESS")
@@ -31,6 +32,12 @@ class Database:
         #     "Database=discordBot;"
         #     "Trusted_Connection=yes;"
         # )
+        # self.connection_string = cnn_string
+        self.DB_HOST = os.getenv("DB_HOST")
+        self.DB_PORT = os.getenv("DB_PORT")
+        self.DB_NAME = os.getenv("DB_NAME")
+        self.DB_USER = os.getenv("DB_USER")
+        self.DB_PASS = os.getenv("DB_PASSWORD")
 
     def map_row_to_dataclass(self, cls, row):
         return cls(**{field: getattr(row, field) for field in cls.__dataclass_fields__.keys() if hasattr(row, field)})
@@ -158,7 +165,7 @@ class Database:
                OUTPUT INSERTED.poll_id
                VALUES (?, ?, ?, ?, ?, ?, ?)
                """,
-                           (poll.channel_id, poll.title, poll.description, poll.created_at, poll.is_active, poll.start_time, poll.duration_minutes))
+                           (poll.channel_id, poll.title, poll.description, poll.created_at, poll.is_active, poll.start_time.astimezone(timezone.utc), poll.duration_minutes))
             new_id = cursor.fetchone()[0]
             conn.commit()
 
