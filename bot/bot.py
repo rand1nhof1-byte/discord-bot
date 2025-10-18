@@ -49,8 +49,8 @@ async def check_polls():
                 conn = database_client.connect()
                 cursor = conn.cursor()
                 cursor.execute(f"""select discord_user_id
-                                    from PollOptions p
-                                    left join Votes v
+                                    from dbo.PollOptions p
+                                    left join dbo.Votes v
                                     on p.option_id = v.option_id and p.poll_id = v.poll_id
                                     where p.poll_id = {poll.poll_id} and p.option_text != 'Nieobecny' and discord_user_id is not null """)
                 users = cursor.fetchall()
@@ -70,7 +70,7 @@ async def check_polls():
 async def setup_hook():
     # odczytaj z bazy wszystkie aktywne ankiety
     with database_client.connect().cursor() as cursor:
-        cursor.execute("SELECT poll_id FROM Polls WHERE is_active=1")
+        cursor.execute("SELECT poll_id FROM dbo.Polls WHERE is_active=1")
         for row in cursor.fetchall():
             poll = database_client.get_poll_by_id(row.poll_id)
 
