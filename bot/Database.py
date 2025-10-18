@@ -62,7 +62,7 @@ class Database:
 
         try:
             cursor.execute(f"""SELECT t.template_id, t.name, t.description, t.created_at, o.template_option_id, o.emoji, o.option_text, o.required_roles
-            FROM Templates t
+            FROM dbo.Templates t
             LEFT JOIN TemplateOptions o ON t.template_id = o.template_id
             WHERE t.template_id = ?""", (template_id))
             template = None
@@ -131,7 +131,7 @@ class Database:
 
         try:
             print(template_option)
-            cursor.execute("INSERT INTO TemplateOptions (template_id, emoji, option_text, required_roles) VALUES (?, ?, ?, ?)",
+            cursor.execute("INSERT INTO dbo.TemplateOptions (template_id, emoji, option_text, required_roles) VALUES (?, ?, ?, ?)",
                            (template_option.template_id, template_option.emoji, template_option.option_text, template_option.required_roles))
 
             conn.commit()
@@ -212,7 +212,7 @@ class Database:
 
         try:
             cursor.execute(f"""
-                                   SELECT * FROM Polls where poll_id = ?
+                                   SELECT * FROM dbo.Polls where poll_id = ?
                                    """,
                            poll_id)
             row = cursor.fetchone()
@@ -230,7 +230,7 @@ class Database:
 
         try:
             cursor.execute(f"""
-                                           SELECT * FROM PollOptions where poll_id = ?
+                                           SELECT * FROM dbo.PollOptions where poll_id = ?
                                            """,
                            poll_id)
             results = []
