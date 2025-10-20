@@ -59,19 +59,34 @@ class PollView(View):
 
             cursor = self.db_conn.cursor(cursor_factory=NamedTupleCursor)
 
-            cursor.execute("DELETE FROM dbo.Votes WHERE poll_id = %s AND discord_user_id = %s", (self.poll.poll_id, user_id))
-
-            new_vote = Vote(vote_id=None, poll_id=self.poll.poll_id, option_id=option.option_id, discord_user_id=user_id, user_display_name=user_name)
             cursor.execute(
-                "INSERT INTO dbo.Votes (poll_id, option_id, discord_user_id, voted_at, user_display_name) VALUES (%s, %s, %s, %s, %s)",
-                (new_vote.poll_id, new_vote.option_id, new_vote.discord_user_id, new_vote.voted_at, new_vote.user_display_name)
+                "SELECT * FROM dbo.Votes WHERE poll_id = %s AND discord_user_id = %s AND option_id = %s",
+                (self.poll.poll_id, user_id, option.option_id)
             )
-            self.db_conn.commit()
+            existing_vote = cursor.fetchone()
 
-            await interaction.response.send_message(
-                f"✅ Zapisałeś się do **{option.option_text}**",
-                ephemeral=True, delete_after=10
-            )
+            if existing_vote:
+                cursor.execute("DELETE FROM dbo.Votes WHERE poll_id = %s AND discord_user_id = %s",
+                               (self.poll.poll_id, user_id))
+                self.db_conn.commit()
+                await interaction.response.send_message(
+                    f"❌ Usunięto Twój wybór **{option.option_text}**",
+                    ephemeral=True, delete_after=10
+                )
+            else:
+                cursor.execute("DELETE FROM dbo.Votes WHERE poll_id = %s AND discord_user_id = %s", (self.poll.poll_id, user_id))
+
+                new_vote = Vote(vote_id=None, poll_id=self.poll.poll_id, option_id=option.option_id, discord_user_id=user_id, user_display_name=user_name)
+                cursor.execute(
+                    "INSERT INTO dbo.Votes (poll_id, option_id, discord_user_id, voted_at, user_display_name) VALUES (%s, %s, %s, %s, %s)",
+                    (new_vote.poll_id, new_vote.option_id, new_vote.discord_user_id, new_vote.voted_at, new_vote.user_display_name)
+                )
+                self.db_conn.commit()
+
+                await interaction.response.send_message(
+                    f"✅ Zapisałeś się do **{option.option_text}**",
+                    ephemeral=True, delete_after=10
+                )
             await self.update_poll_message(interaction)
 
         return callback
