@@ -179,7 +179,7 @@ async def template_create(interaction: discord.Interaction):
 
 
 @bot.tree.command(name="poll")
-@requires_roles("Właściciel", "Moderator", "Koordynator Ligi F1")
+@requires_roles("Właściciel", "Koordynator Ligi F1")
 # @bot.command()
 async def poll(interaction: discord.Interaction):
     """

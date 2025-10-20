@@ -67,7 +67,8 @@ class Database:
             cursor.execute(f"""SELECT t.template_id, t.name, t.description, t.created_at, o.template_option_id, o.emoji, o.option_text, o.required_roles
             FROM dbo.Templates t
             LEFT JOIN dbo.TemplateOptions o ON t.template_id = o.template_id
-            WHERE t.template_id = %s""", (template_id,))
+            WHERE t.template_id = %s
+            ORDER BY o.template_option_id""", (template_id,))
             template = None
             for row in cursor.fetchall():
                 if not template:

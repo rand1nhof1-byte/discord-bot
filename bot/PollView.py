@@ -81,10 +81,8 @@ class PollView(View):
         cursor = self.db_conn.cursor(cursor_factory=NamedTupleCursor)
         cursor.execute("""
                     SELECT o.option_text, o.emoji, o.option_id, string_agg(v.user_display_name, ',') votes
-                    FROM PollOptions o
-                    LEFT JOIN Votes v ON o.option_id = v.option_id
-                    WHERE o.poll_id = ?
                     FROM dbo.PollOptions o
+                    LEFT JOIN dbo.Votes v ON o.option_id = v.option_id
                     WHERE o.poll_id = %s
                     GROUP BY o.option_text, o.emoji, o.option_id
                 """, (self.poll.poll_id,))
