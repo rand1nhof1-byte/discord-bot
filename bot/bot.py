@@ -111,7 +111,7 @@ async def on_ready():
     check_polls.start()
 
 
-@requires_roles("Właściciel", "Moderator")
+@requires_roles("Właściciel", "Admin")
 @bot.tree.command(name="templates")
 async def templates(interaction: discord.Interaction):
     # if not any(role.name in allowed_roles for role in interaction.user.roles):
@@ -164,7 +164,7 @@ async def templates(interaction: discord.Interaction):
 
 
 @bot.tree.command(name="template-create")
-@requires_roles("Właściciel", "Moderator")
+@requires_roles("Właściciel", "Admin")
 async def template_create(interaction: discord.Interaction):
     # if not any(role.name in allowed_roles for role in interaction.user.roles):
     #     await interaction.response.send_message("Nie masz uprawnień do tworzenia szablonów!", ephemeral=True, delete_after=5)
@@ -179,7 +179,7 @@ async def template_create(interaction: discord.Interaction):
 
 
 @bot.tree.command(name="poll")
-@requires_roles("Właściciel", "Koordynator Ligi F1")
+@requires_roles("Właściciel", "Admin", "F1 Koordynator Ligi")
 # @bot.command()
 async def poll(interaction: discord.Interaction):
     """
