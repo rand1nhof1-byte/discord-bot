@@ -270,5 +270,37 @@ class Database:
         finally:
             conn.close()
 
+    def get_all_tracks(self):
+        conn = self.connect()
+        cursor = conn.cursor(cursor_factory=NamedTupleCursor)
+        try:
+            cursor.execute("SELECT track_id, track FROM dbo.track_stats")
+            items = []
+            for row in cursor.fetchall():
+                items.append({
+                    "TrackID": row.track_id,
+                    "TrackName": row.track
+                })
+            return items
+        except Exception as e:
+            print(e)
+            raise
+        finally:
+            conn.close()
+
+    def get_track_by_id(self, track_id: int):
+        conn = self.connect()
+        cursor = conn.cursor(cursor_factory=NamedTupleCursor)
+        try:
+            cursor.execute(f"SELECT * FROM dbo.track_stats where track_id = {track_id}")
+            response = cursor.fetchone()
+
+            return response
+        except Exception as e:
+            print(e)
+            raise
+        finally:
+            conn.close()
+
 
 
