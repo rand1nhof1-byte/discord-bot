@@ -112,7 +112,7 @@ async def on_ready():
 
 
 @requires_roles("Właściciel", "Admin")
-@bot.tree.command(name="templates", guild=discord.Object(id=GUILD_ID))
+@bot.tree.command(name="templates")
 async def templates(interaction: discord.Interaction):
     # if not any(role.name in allowed_roles for role in interaction.user.roles):
     #     await interaction.response.send_message("Nie masz uprawnień do edycji szablonów!", ephemeral=True, delete_after=5)
@@ -163,7 +163,7 @@ async def templates(interaction: discord.Interaction):
             break
 
 
-@bot.tree.command(name="template-create", guild=discord.Object(id=GUILD_ID))
+@bot.tree.command(name="template-create")
 @requires_roles("Właściciel", "Admin")
 async def template_create(interaction: discord.Interaction):
     # if not any(role.name in allowed_roles for role in interaction.user.roles):
@@ -178,7 +178,7 @@ async def template_create(interaction: discord.Interaction):
     await interaction.user.send("Pomyślnie utworzono szablon!")
 
 
-@bot.tree.command(name="poll", guild=discord.Object(id=GUILD_ID))
+@bot.tree.command(name="poll")
 @requires_roles("Właściciel", "Admin", "F1 Koordynator Ligi")
 # @bot.command()
 async def poll(interaction: discord.Interaction):
@@ -297,7 +297,7 @@ async def poll(interaction: discord.Interaction):
         await interaction.user.send("Anulowano tworzenie ankiety")
 
 
-@bot.tree.command(name="tracks", guild=discord.Object(id=GUILD_ID))
+@bot.tree.command(name="tracks")
 @requires_roles("Właściciel", "Admin", "Komentator")
 async def tracks(interaction: discord.Interaction, track_number: int | None = None):
     print("get all tracks from DB")
