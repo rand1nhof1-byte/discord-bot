@@ -116,7 +116,7 @@ async def on_ready():
     check_polls.start()
 
 
-@requires_roles("Właściciel", "Moderator")
+@requires_roles("Właściciel", "Admin")
 @bot.tree.command(name="templates")
 async def templates(interaction: discord.Interaction):
     # if not any(role.name in allowed_roles for role in interaction.user.roles):
@@ -169,7 +169,7 @@ async def templates(interaction: discord.Interaction):
 
 
 @bot.tree.command(name="template-create")
-@requires_roles("Właściciel", "Moderator")
+@requires_roles("Właściciel", "Admin")
 async def template_create(interaction: discord.Interaction):
     # if not any(role.name in allowed_roles for role in interaction.user.roles):
     #     await interaction.response.send_message("Nie masz uprawnień do tworzenia szablonów!", ephemeral=True, delete_after=5)
@@ -184,7 +184,7 @@ async def template_create(interaction: discord.Interaction):
 
 
 @bot.tree.command(name="poll")
-@requires_roles("Właściciel", "Koordynator Ligi F1")
+@requires_roles("Właściciel", "Admin", "F1 Koordynator Ligi")
 # @bot.command()
 async def poll(interaction: discord.Interaction):
     """
@@ -300,6 +300,51 @@ async def poll(interaction: discord.Interaction):
     except ValueError as e:
         await interaction.user.send(str(e.args))
         await interaction.user.send("Anulowano tworzenie ankiety")
+
+
+@bot.tree.command(name="tracks")
+@requires_roles("Właściciel", "Admin", "Komentator")
+async def tracks(interaction: discord.Interaction, track_number: int | None = None):
+    print("get all tracks from DB")
+    track_list = database_client.get_all_tracks()
+    description = "\n".join([f"{x['TrackID']} - {x['TrackName']}" for x in track_list])
+    if track_number is None:
+        embed = discord.Embed(
+            title="STATYSTYKI TORÓW",
+            description=description
+        )
+        await interaction.channel.send(embed=embed)
+        await interaction.response.send_message(
+            f"Wyświetlono listę torów",
+            ephemeral=True, delete_after=10
+        )
+        return
+
+
+    if track_number in [x['TrackID'] for x in track_list]:
+        track_info = database_client.get_track_by_id(track_number)
+        embed = discord.Embed(
+            title=track_info.track.upper(),
+            description="Statystyki toru"
+        )
+        embed.add_field(name="Liczba wyścigów", value=track_info.total_races, inline=False)
+        embed.add_field(name="Rekord toru", value=track_info.track_record, inline=False)
+        embed.add_field(name="Najszybsze okrążenie w wyścigu", value=track_info.fastest_race_lap, inline=False)
+        embed.add_field(name="Najwięcej zwycięstw", value=track_info.most_wins_driver, inline=False)
+        embed.add_field(name="Najwięcej podium", value=track_info.most_podiums_driver, inline=False)
+        embed.add_field(name="SC/VSC", value=track_info.safety_cars, inline=False)
+        embed.add_field(name="Najszybsze okrążenie kwalifikacyjne", value=track_info.fastest_quali_lap, inline=False)
+        embed.add_field(name="Najwięcej pole position", value=track_info.most_poles_driver, inline=False)
+        await interaction.channel.send(embed=embed)
+        await interaction.response.send_message(
+            f"Wyświetlono statystyki dla {track_info.track}",
+            ephemeral=True, delete_after=10
+        )
+    else:
+        await interaction.response.send_message(
+            f"Nie znaleziono toru o podanym ID",
+            ephemeral=True, delete_after=10
+        )
 
 #
 # @bot.event
