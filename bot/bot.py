@@ -75,15 +75,20 @@ async def setup_hook():
     with database_client.connect().cursor(cursor_factory=NamedTupleCursor) as cursor:
         cursor.execute("SELECT poll_id FROM dbo.Polls WHERE is_active=TRUE")
         for row in cursor.fetchall():
+            print(row.poll_id)
             poll = database_client.get_poll_by_id(row.poll_id)
+            print(poll)
 
             # wyciągnij opcje ankiety z bazy
             options = database_client.get_poll_options(poll.poll_id)
+            print(options)
             # options = [TemplateOption(*r) for r in cursor.fetchall()]
             channel = await bot.fetch_channel(poll.channel_id)
+            print(f"Fetched channel {channel.id}")
             if not channel:
                 return
             message = await channel.fetch_message(poll.message_id)
+            print(f"Fetched message {message.id}")
             if not message:
                 return
             # zarejestruj persistent view
