@@ -106,7 +106,7 @@ async def wait_for_dm(interaction: discord.Interaction, prompt, timeout=120):
 @bot.event
 async def on_ready():
     print(f'Zalogowano jako {bot.user}')
-    await bot.tree.sync()
+    await bot.tree.sync(guild=discord.Object(id=GUILD_ID))
     await setup_hook()
     check_polls.start()
 
